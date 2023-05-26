@@ -1,2 +1,1 @@
-# cashier-admin
-收银系统
+E3HUI丹红市场数据录入平台

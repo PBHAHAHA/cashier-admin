@@ -1,0 +1,16 @@
+@import './rest';
+@import './mixin';
+@import './element-theme';
+
+body,
+html,
+.el-main {
+    @include scollBar;
+}
+
+.page-main {
+    width: 100%;
+    background: #fff;
+    padding: 15px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, .05);
+}
