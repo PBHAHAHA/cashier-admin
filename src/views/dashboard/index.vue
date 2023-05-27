@@ -133,6 +133,9 @@ async function getRoomData(){
   }
 }
 
+setInterval(() => {
+  getRoomData()
+},10000)
 getRoomData()
 
 

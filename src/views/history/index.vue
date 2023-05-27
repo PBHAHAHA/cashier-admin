@@ -1,14 +1,19 @@
 <template>
-<div class="history-container">
+  <div class="history-container">
     <h2>历史订单</h2>
-    <el-collapse v-model="activeName" accordion>
+    <el-collapse v-if="historyListData.length" v-model="activeName" accordion>
       <el-collapse-item :name="item.time" v-for="item in historyListData">
         <template #title>
           <div class="title-wrap">
             <span>{{ item.date }}</span>
             <div class="handle-box">
-                <span>小记： {{ item.subtotal }} 元</span>
-                <el-button type="danger" size="small">删除</el-button>
+              <span>小记： {{ item.subtotal }} 元</span>
+              <el-button
+                type="danger"
+                size="small"
+                @click.stop="delOrder(item.id)"
+                >删除</el-button
+              >
             </div>
           </div>
         </template>
@@ -19,16 +24,10 @@
             label="房间名"
             width="150"
           />
-          <el-table-column
-            align="center"
-            prop="price"
-            label="单价"
-            width="120"
-          />
           <el-table-column align="center" prop="start_time" label="开始时间" />
           <el-table-column align="center" prop="end_time" label="结束时间" />
           <el-table-column align="center" prop="total_time" label="总时长" />
-          
+
           <el-table-column
             align="center"
             prop="order"
@@ -36,22 +35,32 @@
             min-width="200"
           >
             <template #default="{ row }">
-              <div class="order-box">
-                <!-- {{ row.order.join(",") }} -->
-                {{ row.order_info }}
+              <div v-if="row.order_info.length" class="order-box">
+                <span class="g-item" v-for="g in row.order_info">
+                  {{ g.order_content }} x {{ g.count }}
+                </span>
               </div>
+              <div v-else>--</div>
             </template>
           </el-table-column>
           <el-table-column align="center" prop="cost" label="总费用" />
           <el-table-column align="center" fixed="right" width="140">
             <template #default="{ row }">
-                <el-button type="danger" size="small" @click="delOrder(row.id)">删除该条数据</el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="delOrder(row.order_id)"
+                >删除该条数据</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
       </el-collapse-item>
     </el-collapse>
-</div>
+    <div v-else class="no-data">
+      <el-empty description="暂无数据" />
+    </div>
+  </div>
 </template>
 <script setup>
 import { InfoFilled } from "@element-plus/icons-vue";
@@ -88,16 +97,43 @@ const handleClick = () => {
 // 获取历史订单
 async function getOrder(){
     const res = await getHistoryOrderInfo()
-    console.log(res)
+    if(res.code === 200){
+        historyListData.value = res.data
+    }
 }
 getOrder()
+//
+function delHistory(e){
+
+}
 // 删除历史订单
 async function delOrder(id){
+    console.log(id)
     try {
+        ElMessageBox.confirm(
+    '确认删除?',
+    '注意',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(async () => {
         const res = await delHistoryOrderInfo({
             id
         })
-        
+        if(res.code == 200){
+            ElMessage.success("删除成功")
+            getOrder()
+        }else{
+            ElMessage.error(res.msg)
+        }
+    })
+    .catch(() => {
+    })
+
+
     } catch (error) {
         ElMessage.error(error)
     }
@@ -114,28 +150,48 @@ function close() {
 </script>
 <style lang="scss" scoped>
 .history-container {
-    padding: 30px 50px;
-    background: #fff;
-    h2 {
-        margin-bottom: 20px;
-        text-align: center;
-    }
+  padding: 30px 50px;
+  background: #fff;
+  h2 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
 }
 .title-wrap {
-    font-size: 16px;
-    width: 100%;
+  font-size: 16px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  // margin-right: 10px;
+  .handle-box {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    // margin-right: 10px;
-    .handle-box {
-        display: flex;
-        align-items: center;
-        margin: 0 10px;
-        .el-button {
-            margin-left: 10px;
-        }
+    margin: 0 10px;
+    .el-button {
+      margin-left: 10px;
     }
+  }
 }
 
+.order-box {
+  padding: 4px 10px;
+  background-color: #fff;
+  // box-shadow: 0 0 5px #ccc;
+  line-height: 26px;
+  cursor: pointer;
+  margin: 10px 0;
+  color: $primary-color;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  .g-item {
+    padding: 2px;
+    // border: 1px solid #dbcbb9;
+    border-radius: 2px;
+    background: #ea4444;
+    color: #fff;
+  }
+}
 </style>
