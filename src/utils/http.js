@@ -4,7 +4,7 @@ import qs from 'qs'
 const base = import.meta.env.VITE_API;
 
 const http = axios.create({
-    baseURL: base,
+    baseURL: "/api",
     timeout: 60000
 })
 

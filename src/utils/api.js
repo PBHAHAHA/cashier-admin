@@ -14,3 +14,9 @@ export const setCommodityInfoApi = ((params) => http.post('/set_commodity_info',
 export const getHistoryOrderInfo = (() => http.get('/get_history_order_info'))
 // 删除历史信息
 export const delHistoryOrderInfo = ((params) => http.post('/del_history_order_info', params))
+
+// 
+export const setOrderInfoApi = ((params) => http.post('/set_order_info', params))
+
+export const pauseOrderApi = ((params) => http.post("/pause_order" , params))
+export const openEndOrderApi = ((params) => http.post("/open_end_order" , params))

@@ -30,15 +30,31 @@
     </el-dialog>
   </template>
   <script setup>
-  import { ref } from 'vue';
-  
+  import { ref, watch } from 'vue';
+import { getCommodityInfoApi, setCommodityInfoApi } from '../../../utils/api';
+    
+const props = defineProps({
+    data: {
+        type: Array,
+    }
+})
+
+// 获取所有商品数据
+// 获取所有商品
+async function getGoodsData(){
+    listData.value = []
+  const res = await getCommodityInfoApi()
+  console.log(res)
+  if(res.code == 200){
+    res.data.forEach(item => {
+        listData.value.push(item)
+    })
+  }
+}
+
+
   // 数据
   const listData = ref([
-    {
-      id: "001",
-      name: "香烟",
-      price: "60"
-    }
   ])
   let addNameVal = ref("")
   let addPriceVal = ref("")
@@ -71,13 +87,27 @@
   let visible = ref(false)
   function show(){
       visible.value = true
+      getGoodsData()
   }
   function close(){
       visible.value = false
   }
-  function submit() {
-      console.log("提交");
-      console.log(listData.value)
+
+  const emits = defineEmits([
+  "reloadList"
+])
+  async function submit() {
+    if(addNameVal.value && addPriceVal){
+        addItem()
+    }
+      const res = await setCommodityInfoApi(listData.value)
+      if(res.code == 200){
+        ElMessage.success("编辑成功")
+        emits("reloadList")
+        close()
+      }else{
+        ElMessage.error(res.msg)
+      }
   }
   
   defineExpose({

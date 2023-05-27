@@ -1,12 +1,12 @@
 <template>
-  <el-dialog v-model="historyVisible" title="房间1 点单" width="900" center>
+  <el-dialog v-model="historyVisible" :title="dialogTitle" width="900" center>
     <div class="order-container">
 
       <div class="yidian">
         <div class="desc">已点</div>
         <div class="box">
-          <div class="item" v-for="(item, index) in goodsData">
-            {{item.name}} x {{ item.num }}
+          <div class="item" v-for="(item, index) in goodsData" :key="item.order_id">
+            {{item.order_content}} x {{ item.count }}
             <el-button size="small" link type="danger" @click="delHandle(index)">删除</el-button>
           </div>
         </div>
@@ -14,7 +14,7 @@
       <div class="goods-wrap">
         <div class="desc">商品</div>
         <div class="goods-box">
-          <el-button class="item" v-for="item in allGoodsList" @dblclick="handleGoods(item)">
+          <el-button class="item" v-for="item in allGoodsList" @click="handleGoods(item)" @dblclick="handleDBGoods(item)">
             <span class="name">{{item.name}}</span>
             <span class="price">{{item.price}}元</span>
           </el-button>
@@ -25,8 +25,9 @@
           {{ choosedItemName }}
         </div>
         <div class="handle-box">
-          <el-input-number v-show="choosedItemName" v-model="num" :min="1" :max="999" @change="handleChange" />
-          <el-button type="primary" @click="confirmFunc">确定</el-button>
+          <el-input-number v-show="choosedItemName" v-model="count" :min="1" :max="999" @change="handleChange" />
+          <el-button v-show="choosedItemName" type="primary" @click="confirmFunc">确定</el-button>
+          <el-button type="primary" @click="submit">保存</el-button>
         </div>
       </div>
     </div>
@@ -35,55 +36,41 @@
 <script setup lang="ts">
 import { InfoFilled } from "@element-plus/icons-vue";
 import { ref } from "vue";
+import _ from "lodash"
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getCommodityInfoApi,setOrderInfoApi } from "../../../utils/api";
 
-const goodsData = ref([
-  {
-    name: "红牛",
-    num: 3
-  },{
-    name: "薯片",
-    num: 2
-  },{
-    name: "啤酒",
-    num: 1
-  },{
-    name: "花生",
-    num: 5
-  },{
-    name: "咖啡",
-    num: 1
-  }
-])
+const goodsData = ref([])
 
-const allGoodsList = ref([
-  {
-    name: "红牛",
-    price: 10
-  },{
-    name: "薯片",
-    price: 8.5
-  },{
-    name: "啤酒",
-    price: 6
-  },{
-    name: "花生",
-    price: 12
-  },{
-    name: "咖啡",
-    price: 20
+const allGoodsList = ref([])
+// 获取所有商品
+async function getGoodsData(){
+  allGoodsList.value = []
+  const res = await getCommodityInfoApi()
+  if(res.code == 200){
+    res.data.forEach(item => {
+        allGoodsList.value.push(item)
+    })
   }
-])
+}
+
 
 const choosedItemName = ref("")
 let choosedItemIndex
 function handleGoods(row) {
   choosedItemName.value = row.name
-  choosedItemIndex = goodsData.value.findIndex(item => item.name === row.name)
+  choosedItemIndex = goodsData.value.findIndex(item => item.order_content === row.name)
+}
+function handleDBGoods(row){
+  console.log(row)
+  choosedItemName.value = row.name
+  choosedItemIndex = goodsData.value.findIndex(item => item.order_content === row.name)
+  confirmFunc()
 }
 
 // 删除已点商品
 function delHandle(index){
+  console.log(index)
   ElMessageBox.confirm(
     '确认删除?',
     '注意',
@@ -95,6 +82,8 @@ function delHandle(index){
   )
     .then(() => {
       goodsData.value.splice(index,1)
+      console.log(goodsData.value)
+      goodsData.value = goodsData.value
     })
     .catch(() => {
     })
@@ -104,8 +93,9 @@ function delHandle(index){
 function confirmFunc() {
   if(!choosedItemName.value) return
   let obj = {
-    name: choosedItemName.value,
-    num: num.value
+    order_content: choosedItemName.value,
+    count: count.value,
+
   }
   if(choosedItemIndex === -1){
     goodsData.value.push(obj)
@@ -113,22 +103,54 @@ function confirmFunc() {
     goodsData.value[choosedItemIndex] = obj
   }
 
-  num.value = 1
+  count.value = 1
   choosedItemName.value = ""
 }
 
-const num = ref(1)
+const count = ref(1)
 const handleChange = (value) => {
   console.log(value)
 }
 
-const handleClick = () => {
+const emits = defineEmits([
+  "reloadList"
+])
+async function submit () {
   console.log("click");
+  goodsData.value.forEach(item => {
+    if(!item?.order_id){
+      item.order_id = ""
+    }
+  })
+  let obj = {
+    id: roomId.value,
+    data: goodsData.value
+  }
+  console.log(obj)
+  const res = await setOrderInfoApi(obj)
+  if(res.code == 200){
+    ElMessage.success("编辑成功")
+    emits("reloadList")
+    close()
+  }else{
+    ElMessage.error(res.msg)
+  }
 };
 
+// 弹窗标题
+const dialogTitle = ref("")
+
+
+// 弹窗显示与隐藏
 let historyVisible = ref(false);
-function show() {
+let roomId = ref("")
+function show(row) {
   historyVisible.value = true;
+  roomId.value = row.id
+  dialogTitle.value = row.name + '点单'
+  getGoodsData()
+  // 回填  已选商品
+  goodsData.value = _.cloneDeep(row.order_info)
 }
 function close() {
   historyVisible.value = false;

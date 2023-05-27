@@ -53,11 +53,22 @@ export default ({ mode }) => {
             }),
         ],
         server: {
-            host:"0.0.0.0",
-            port: 80,
-            open: false,
+            // host:"0.0.0.0",
+            // port: 8800,
+            // open: false,
             cors: true,
+            proxy: {
+                '/api': { // 匹配请求路径，localhost:3000/snow
+                    target: 'http://47.109.79.215:8888', // 代理的目标地址
+                    changeOrigin: true, // 开发模式，默认的origin是真实的 origin:localhost:3000 代理服务会把origin修改为目标地址
+                    // secure: true, // 是否https接口
+                    // ws: true, // 是否代理websockets
+                    // rewrite target目标地址 + '/abc'，如果接口是这样的，那么不用重写
+                    rewrite: (path) => path.replace(/^\/api/, '')// 路径重写，本项目不需要重写
+                }
+            },
         },
+        
         clearScreen: false, // 设为false 可以避免 vite 清屏而错过在终端中打印某些关键信息
 
         resolve: {
@@ -118,6 +129,7 @@ export default ({ mode }) => {
                 }
             } 
         },
+
 
 
     })

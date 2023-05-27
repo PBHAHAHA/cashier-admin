@@ -1,4 +1,7 @@
 <template>
+  <div class="room-dialog" >
+
+
   <el-dialog v-model="visible" title="房间设置" width="600" center>
     <div class="room-container">
       <div class="title">
@@ -28,19 +31,30 @@
       </span>
     </template>
   </el-dialog>
+</div>
 </template>
 <script setup>
 import { ref } from 'vue';
 import {handlePrice} from "@/utils/common.js"
+import { setRoomInfoApi } from '../../../utils/api';
+import qs from 'qs'
+import { ElMessage } from 'element-plus';
 
+const props = defineProps({
+    data: {
+        type: Array,
+    }
+})
+
+watch(
+    () => props.data,
+    (newVal) => {
+      
+
+    }
+)
 // 数据
-const listData = ref([
-  {
-    id: 1,
-    name: "207",
-    price: "108"
-  }
-])
+const listData = ref([])
 let addNameVal = ref("")
 let addPriceVal = ref("")
 
@@ -72,13 +86,36 @@ function delItem(row) {
 let visible = ref(false)
 function show(){
     visible.value = true
+    listData.value = []
+    props.data.forEach((item) => {
+        listData.value.push({
+            id: item.id,
+            name: item.name,
+            price: item.price
+        })
+    })
 }
 function close(){
     visible.value = false
 }
-function submit() {
-    console.log("提交");
-    console.log(listData.value)
+
+const emits = defineEmits([
+  "reloadList"
+])
+async function submit() {
+    if(addNameVal.value && addPriceVal){
+        addItem()
+    }
+    const res = await setRoomInfoApi(listData.value)
+    console.log(res)
+    if(res.code == 200){
+      ElMessage.success("编辑成功")
+      emits("reloadList")
+      close()
+    }else{
+      ElMessage.error(res.msg)
+    }
+    
 }
 
 defineExpose({
@@ -86,8 +123,15 @@ defineExpose({
 })
 </script>
 <style lang="scss" scoped>
+.room-dialog {
+  // height: 200px;
+  ::v-deep(.el-dialog__body) {
+    height: 500px;
+    overflow: auto;
+  }
+}
 .room-container {
-  margin: 20px 0;
+  // margin: 20px 0;
   .title {
     display: flex;
     text-align: center;

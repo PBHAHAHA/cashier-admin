@@ -21,48 +21,57 @@
           label="房间名"
           width="150"
         />
-        <el-table-column align="center" prop="price" label="单价" width="120" />
+        <el-table-column align="center" prop="price" label="单价" width="120" >
+          <template #default="{row}">
+            {{ row.price }} 元
+          </template>
+        </el-table-column>
         <el-table-column align="center" prop="start_time" label="开始时间" />
         <el-table-column align="center" prop="end_time" label="结束时间" />
         <el-table-column align="center" prop="total_time" label="当前时长" />
         <el-table-column align="center" prop="pause_time" label="暂停时长" />
-        <el-table-column align="center" prop="cost" label="总费用" />
+        <el-table-column align="center" prop="cost" label="总费用">
+          <template #default="{row}">
+            {{ row.cost }} 元
+          </template>
+        </el-table-column>
         <el-table-column
           align="center"
           prop="order_info"
           label="订单"
           min-width="200"
         >
-          <template #default="{row}"> 
-            <div class="order-box" @click="handleOrder">
+        <template #default="{row}"> 
+            <div class="order-box" v-if="row.order_info.length > 0" @click="handleOrder(row)">
               <!-- {{ row.order_info.join(",") }} -->
               <span class="g-item" v-for="g in row.order_info">
-                {{ g }}
+                {{ g.order_content }} x {{ g.count }}
               </span>
             </div>
+            <a class="no-data-link c-p" v-else @click="handleOrder(row)">去添加商品</a>
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="zip" label="暂停/恢复" width="120">
+        <el-table-column align="center" fixed="right" prop="zip" label="暂停/恢复" width="120">
           <template #default="{row}">
-            <el-button size="small" type="primary" v-if="row.pause_status === 'running'">暂停</el-button>
-            <el-button type="danger" size="small" v-else>恢复</el-button>
+            <el-button size="small" type="primary" v-if="row.pause_status === 'running'" @click="changePauseStatus(row)">暂停</el-button>
+            <el-button type="danger" size="small" v-else @click="changePauseStatus(row)">恢复</el-button>
           </template>
         </el-table-column>
         <el-table-column align="center" fixed="right" label="开单/结单" width="120">
           <template #default="{row}">
-            <el-button type="primary" size="small" @click="handleClick" v-if="row.order_status === 'pause'"
+            <el-button type="primary" size="small" @click="changeOpen(row)" v-if="row.order_status === 'ending'"
               >开单</el-button 
             >
-            <el-button type="danger" size="small" v-else @click="handleClick">结单</el-button>
+            <el-button type="danger" size="small" v-else @click="changeOpen(row)">结单</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
   </div>
 
-  <RoomSet ref="RoomSetRef"></RoomSet>
-  <GoodsSet ref="GoodsSetRef"></GoodsSet>
-  <Order ref="OrderRef"></Order>
+  <RoomSet :data="tableData" @reload-list="getRoomData" ref="RoomSetRef"></RoomSet>
+  <GoodsSet @reload-list="getRoomData" ref="GoodsSetRef"></GoodsSet>
+  <Order ref="OrderRef" @reload-list="getRoomData"></Order>
 </template>
 
 <script setup>
@@ -70,10 +79,13 @@ import RoomSet from "./components/RoomSet.vue";
 import GoodsSet from "./components/GoodsSet.vue";
 import Order from "./components/Order.vue";
 import randomcolor from "randomcolor"
-const handleClick = () => {
+import { getRoomInfoApi,pauseOrderApi,openEndOrderApi } from "../../utils/api";
+import { forEach } from "lodash";
+import { ElMessage } from "element-plus";
+ function changeOpen (row) {
   console.log("click");
   ElMessageBox.confirm(
-    '确认结束当前订单？',
+    `确认${row.order_status == 'ending' ? '开始' : '结束'}当前订单？`,
     '注意',
     {
       confirmButtonText: '确认',
@@ -81,29 +93,48 @@ const handleClick = () => {
       type: 'warning',
     }
   )
-    .then(() => {
-      goodsData.value.splice(index,1)
+    .then(async () => {
+      // goodsData.value.splice(index,1)
+      const res = await openEndOrderApi({
+        id: row.id,
+        action: row.order_status === 'ending' ? 'open' : 'end'
+      })
+      getRoomData()
+      console.log(res)
     })
     .catch(() => {
     })
 };
 
-const tableData = [
-  {
-    id: "2016-05-03",
-    name: "Tom",
-    price: "104",
-    start_time: "2021-02-22 12:22:32",
-    end_time: "2021-02-22 12:22:32",
-    total_time: "2021-02-22 12:22:32",
-    pause_time: "2021-02-22 12:22:32",
-    pause_status: "running",//"pause" "running"
-    order_status: "pause",
-    cost: "1233",
-    order_info: ["香烟","啤酒"]
-  },
-  
-];
+async function changePauseStatus(row) {
+  console.log(row.pause_status)
+  const res = await pauseOrderApi({
+    id: row.id,
+    action: row.pause_status === 'running' ? 'pause' : 'run'
+  })
+  if(res.code ==200){
+    ElMessage.success("操作成功")
+    getRoomData()
+  }else{
+    ElMessage.success(res.msg)
+  }
+}
+
+const tableData = ref([]);
+// for(let i =0;i<20;i++){
+//   tableData.push({})
+// }
+// 获取 房间列表数据
+async function getRoomData(){
+  const res = await getRoomInfoApi()
+  console.log(res)
+  if(res.code == 200){
+    tableData.value = res.data
+  }
+}
+
+getRoomData()
+
 
 // ----弹窗操作 start------
 let RoomSetRef = ref(null)
@@ -118,8 +149,8 @@ function handleGoodsSet(){
 }
 
 let OrderRef = ref(null)
-function handleOrder(){
-  OrderRef.value.show()
+function handleOrder(row){
+  OrderRef.value.show(row)
 }
 // ----弹窗操作 end------
 </script>
@@ -156,6 +187,7 @@ function handleOrder(){
     }
   }
   .content {
+    overflow: auto;
     background-color: #fff;
     flex: 1;
     padding: 10px;
@@ -181,5 +213,9 @@ function handleOrder(){
       }
     }
   }
+}
+.no-data-link {
+  color: $primary-color;
+  border-bottom: 1px solid $primary-color;
 }
 </style>
