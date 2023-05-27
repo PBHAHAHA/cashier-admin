@@ -54,7 +54,7 @@ export default ({ mode }) => {
         ],
         server: {
             host:"0.0.0.0",
-            port: 8800,
+            port: 80,
             open: false,
             cors: true,
         },
@@ -94,7 +94,6 @@ export default ({ mode }) => {
                 }
             }
         },
-
         // 解决 引入element-plus样式后打包警告问题
         css: {
             postcss: {
@@ -111,6 +110,13 @@ export default ({ mode }) => {
                     }
                 ]
             },
+            preprocessorOptions: {
+                scss: {
+                  additionalData: `
+                    @import "./src/scss/var.scss";
+                  `
+                }
+            } 
         },
 
 

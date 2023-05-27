@@ -18,6 +18,12 @@ const routes = [{
         meta: {
             title: '首页'
         }
+    },{
+        path: '/history',
+        component: () => import('../views/history/index.vue'),
+        meta: {
+            title: '历史记录'
+        }
     }]
 },
 // {

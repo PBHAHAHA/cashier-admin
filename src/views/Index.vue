@@ -2,7 +2,7 @@
     <div class="common-layout">
         <el-container>
             <el-header>
-                <h2 style="color: #f60">LOGO</h2>
+                <h2 style="color: #3f61e2"> <router-link to="/dashboard">聚点棋牌记账</router-link> </h2>
             </el-header>
             <el-container>
                 <el-main>
@@ -35,7 +35,7 @@ function exit() {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #fff;
+    background: $primary-color;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     position: sticky;
     top: 0;
@@ -43,6 +43,11 @@ function exit() {
 
     .el-dropdown-link {
         cursor: pointer;
+    }
+    h2 {
+        a {
+            color: #fff !important;
+        }
     }
 }
 

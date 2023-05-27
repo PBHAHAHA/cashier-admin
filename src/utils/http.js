@@ -60,9 +60,7 @@ http.interceptors.request.use(
 http.interceptors.response.use(response => {
     const data = response.data
     if (data.code == 401) {
-        alert('登录过期');
         localStorage.clear();
-        window.location.href = '/login';
     }
     return data
 }, (err) => {

@@ -176,3 +176,7 @@ export function exportExcl(url, params, successCallback, errorCallback) {
         errorCallback && errorCallback()
     });
 }
+// 价格输入框只能输入数字并且保留两位小数
+export function handlePrice(e){
+    e.target.value = (e.target.value.match(/^\d*(\.?\d{0,2})/g)[0]) || null
+}
