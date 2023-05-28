@@ -7,17 +7,20 @@
       <div class="title">
         <span>房间名</span>
         <span>单价(元)</span>
+        <span>套餐价(元)</span>
         <span></span>
       </div>
       <div class="content">
         <div class="item del-items" v-for="item in listData" :key="item.id">
           <el-input placeholder="请输入房间名" v-model="item.name"></el-input>
           <el-input placeholder="请输入单价" @keyup = "handlePrice" v-model="item.price"></el-input>
+          <el-input placeholder="请输入套餐价" @keyup = "handlePrice" v-model="item.base_price"></el-input>
           <el-button type="danger" @click="delItem(item)">删除</el-button>
         </div>
         <div class="item add-item">
           <el-input v-model="addNameVal" placeholder="请输入房间名"></el-input>
           <el-input v-model="addPriceVal" @keyup = "handlePrice" placeholder="请输入单价"></el-input>
+          <el-input v-model="addBasePriceVal" @keyup = "handlePrice" placeholder="请输入套餐价"></el-input>
           <el-button type="primary" @click="addItem">添加</el-button>
         </div>
       </div>
@@ -57,6 +60,7 @@ watch(
 const listData = ref([])
 let addNameVal = ref("")
 let addPriceVal = ref("")
+let addBasePriceVal = ref("")
 
 // 添加
 function addItem(){
@@ -66,15 +70,20 @@ function addItem(){
   }else if(!addPriceVal.value){
     ElMessage.error("请先填入价格")
     return
+  }else if(!addBasePriceVal){
+    ElMessage.error("请先填入套餐价")
+    return
   }
   const obj = {
     id: "",
     name: addNameVal.value,
-    price: addPriceVal.value
+    price: addPriceVal.value,
+    base_price: addBasePriceVal.value,
   }
   listData.value.push(obj)
   addNameVal.value = ""
   addPriceVal.value = ""
+  addBasePriceVal.value = ""
 }
 // 删除
 function delItem(row) {
@@ -91,7 +100,8 @@ function show(){
         listData.value.push({
             id: item.id,
             name: item.name,
-            price: item.price
+            price: item.price,
+            base_price: item.base_price
         })
     })
 }
@@ -103,7 +113,7 @@ const emits = defineEmits([
   "reloadList"
 ])
 async function submit() {
-    if(addNameVal.value && addPriceVal){
+    if(addNameVal.value && addPriceVal && addBasePriceVal){
         addItem()
     }
     const res = await setRoomInfoApi(listData.value)

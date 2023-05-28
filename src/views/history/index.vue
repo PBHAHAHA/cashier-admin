@@ -1,6 +1,7 @@
 <template>
   <div class="history-container">
-    <h2>历史订单</h2>
+    <h2>历史订单 &nbsp; <span style="font-size: 20px;font-weight: 400;">(总计：{{ totalPrice }}元)</span></h2>
+    <!-- <h4></h4> -->
     <el-collapse v-if="historyListData.length" v-model="activeName" accordion>
       <el-collapse-item :name="item.time" v-for="item in historyListData">
         <template #title>
@@ -69,28 +70,9 @@ import { delHistoryOrderInfo } from "@/utils/api";
 import { ElMessage } from "element-plus";
 import { getHistoryOrderInfo } from "../../utils/api";
 
-const historyListData = ref([
-  {
-    id: "001",
-    date: "2023-03-01",
-    subtotal: "600",
-    orders: [
-      {
-        order_id: "2016-05-03",
-        room_name: "Tom",
-        price: "104",
-        start_time: "2021-02-22 12:22:32",
-        end_time: "2021-02-22 12:22:32",
-        total_time: "2021-02-22 12:22:32",
-        overtime: "2021-02-22 12:22:32",
-        isStop: true,
-        isEnd: false,
-        order_info: "香烟",
-      },
-    ],
-  },
-]);
-const activeName = ref(historyListData.value[0].time)
+const totalPrice = ref("")
+const historyListData = ref([]);
+const activeName = ref("")
 const handleClick = () => {
   console.log("click");
 };
@@ -99,6 +81,10 @@ async function getOrder(){
     const res = await getHistoryOrderInfo()
     if(res.code === 200){
         historyListData.value = res.data
+        totalPrice.value = historyListData.value.reduce((pre,cur) => {
+            return pre+cur.subtotal
+        },0)
+        activeName.value = historyListData.value[0].time
     }
 }
 getOrder()

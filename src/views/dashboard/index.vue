@@ -30,6 +30,8 @@
         <el-table-column align="center" prop="end_time" label="结束时间" />
         <el-table-column align="center" prop="total_time" label="当前时长" />
         <el-table-column align="center" prop="pause_time" label="暂停时长" />
+        <el-table-column align="center" prop="base_cost" label="套餐费用"/>
+        <el-table-column align="center" prop="add_time_cost" label="加时费用"/>
         <el-table-column align="center" prop="cost" label="总费用">
           <template #default="{row}">
             {{ row.cost }} 元
@@ -82,6 +84,7 @@ import randomcolor from "randomcolor"
 import { getRoomInfoApi,pauseOrderApi,openEndOrderApi } from "../../utils/api";
 import { forEach } from "lodash";
 import { ElMessage } from "element-plus";
+import { onUnmounted } from "vue";
  function changeOpen (row) {
   console.log("click");
   ElMessageBox.confirm(
@@ -132,10 +135,14 @@ async function getRoomData(){
     tableData.value = res.data
   }
 }
+// 销毁定时器
+onUnmounted(() => {
+  clearInterval(timer)
+})
 
-setInterval(() => {
+var timer = setInterval(() => {
   getRoomData()
-},10000)
+},5000)
 getRoomData()
 
 
@@ -221,4 +228,13 @@ function handleOrder(row){
   color: $primary-color;
   border-bottom: 1px solid $primary-color;
 }
+
+::v-deep(.el-table__row) {
+  font-size: 20px;
+  
+}
+::v-deep(.cell){
+  padding: 10px 5px;
+}
+.el-table__header-wrapper {}
 </style>
