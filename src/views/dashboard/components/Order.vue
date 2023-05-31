@@ -95,12 +95,11 @@ function confirmFunc() {
   let obj = {
     order_content: choosedItemName.value,
     count: count.value,
-
   }
   if(choosedItemIndex === -1){
     goodsData.value.push(obj)
   }else{
-    goodsData.value[choosedItemIndex] = obj
+    goodsData.value[choosedItemIndex].count += count.value 
   }
 
   count.value = 1

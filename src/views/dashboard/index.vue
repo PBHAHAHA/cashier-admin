@@ -26,12 +26,29 @@
             {{ row.price }} 元
           </template>
         </el-table-column>
-        <el-table-column align="center" prop="start_time" label="开始时间" />
+        <el-table-column align="center" prop="start_time" label="开始时间">
+          <template #default="{row}">
+            <div class="sd" @click="changeRoomSetFunc(row)">{{ row.start_time }}</div>
+          </template>
+        </el-table-column>
         <el-table-column align="center" prop="end_time" label="结束时间" />
         <el-table-column align="center" prop="total_time" label="当前时长" />
         <el-table-column align="center" prop="pause_time" label="暂停时长" />
-        <el-table-column align="center" prop="base_cost" label="套餐费用"/>
-        <el-table-column align="center" prop="add_time_cost" label="加时费用"/>
+        <el-table-column align="center" prop="base_cost" label="套餐费用">
+          <template #default="{row}">
+            {{ row.base_cost }} 元  
+          </template>
+        </el-table-column>
+        <el-table-column align="center" prop="add_time_cost" label="加时费用">
+          <template #default="{row}">
+            {{ row.add_time_cost }} 元
+          </template>
+        </el-table-column>
+        <el-table-column align="center" prop="adjust_money" label="手动调差">
+          <template #default="{row}">
+            <div class="sd" @click="changeRoomSetFunc(row)">{{ row.adjust_money }} 元</div>
+          </template>
+        </el-table-column>
         <el-table-column align="center" prop="cost" label="总费用">
           <template #default="{row}">
             {{ row.cost }} 元
@@ -55,16 +72,16 @@
         </el-table-column>
         <el-table-column align="center" fixed="right" prop="zip" label="暂停/恢复" width="120">
           <template #default="{row}">
-            <el-button size="small" type="primary" v-if="row.pause_status === 'running'" @click="changePauseStatus(row)">暂停</el-button>
-            <el-button type="danger" size="small" v-else @click="changePauseStatus(row)">恢复</el-button>
+            <el-button type="primary" v-if="row.pause_status === 'running'" @click="changePauseStatus(row)">暂停</el-button>
+            <el-button type="danger" v-else @click="changePauseStatus(row)">恢复</el-button>
           </template>
         </el-table-column>
         <el-table-column align="center" fixed="right" label="开单/结单" width="120">
           <template #default="{row}">
-            <el-button type="primary" size="small" @click="changeOpen(row)" v-if="row.order_status === 'ending'"
+            <el-button type="primary" @click="changeOpen(row)" v-if="row.order_status === 'ending'"
               >开单</el-button 
             >
-            <el-button type="danger" size="small" v-else @click="changeOpen(row)">结单</el-button>
+            <el-button type="danger" v-else @click="changeOpen(row)">结单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -74,6 +91,7 @@
   <RoomSet :data="tableData" @reload-list="getRoomData" ref="RoomSetRef"></RoomSet>
   <GoodsSet @reload-list="getRoomData" ref="GoodsSetRef"></GoodsSet>
   <Order ref="OrderRef" @reload-list="getRoomData"></Order>
+  <ChangeRoomset ref="ChangeRoomsetRef" @reload-list="getRoomData"></ChangeRoomset>
 </template>
 
 <script setup>
@@ -81,6 +99,7 @@ import RoomSet from "./components/RoomSet.vue";
 import GoodsSet from "./components/GoodsSet.vue";
 import Order from "./components/Order.vue";
 import randomcolor from "randomcolor"
+import ChangeRoomset from "./components/ChangeRoomset.vue";
 import { getRoomInfoApi,pauseOrderApi,openEndOrderApi } from "../../utils/api";
 import { forEach } from "lodash";
 import { ElMessage } from "element-plus";
@@ -121,6 +140,12 @@ async function changePauseStatus(row) {
   }else{
     ElMessage.success(res.msg)
   }
+}
+
+// 修改房间设置
+const ChangeRoomsetRef = ref(null)
+function changeRoomSetFunc(row){
+  ChangeRoomsetRef.value.show(row)
 }
 
 const tableData = ref([]);
@@ -237,4 +262,9 @@ function handleOrder(row){
   padding: 10px 5px;
 }
 .el-table__header-wrapper {}
+.sd {
+  cursor: pointer;
+  color: $primary-color;
+  border-bottom: 1px solid $primary-color ;
+}
 </style>

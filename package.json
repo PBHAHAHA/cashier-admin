@@ -12,6 +12,7 @@
     "default-passive-events": "^2.0.0",
     "element-plus": "^2.2.27",
     "lodash": "^4.17.21",
+    "moment": "^2.29.4",
     "pinia": "^2.0.13",
     "qs": "^6.10.3",
     "randomcolor": "^0.6.2",

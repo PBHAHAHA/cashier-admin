@@ -8,6 +8,7 @@
         <span>房间名</span>
         <span>单价(元)</span>
         <span>套餐价(元)</span>
+        <span>套餐时常</span>
         <span></span>
       </div>
       <div class="content">
@@ -15,12 +16,14 @@
           <el-input placeholder="请输入房间名" v-model="item.name"></el-input>
           <el-input placeholder="请输入单价" @keyup = "handlePrice" v-model="item.price"></el-input>
           <el-input placeholder="请输入套餐价" @keyup = "handlePrice" v-model="item.base_price"></el-input>
+          <el-input placeholder="请输入套餐时长" @keyup = "handlePrice" v-model="item.base_hours"></el-input>
           <el-button type="danger" @click="delItem(item)">删除</el-button>
         </div>
         <div class="item add-item">
           <el-input v-model="addNameVal" placeholder="请输入房间名"></el-input>
           <el-input v-model="addPriceVal" @keyup = "handlePrice" placeholder="请输入单价"></el-input>
           <el-input v-model="addBasePriceVal" @keyup = "handlePrice" placeholder="请输入套餐价"></el-input>
+          <el-input v-model="addBaseTimeVal" @keyup = "handlePrice" placeholder="请输入套餐时长"></el-input>
           <el-button type="primary" @click="addItem">添加</el-button>
         </div>
       </div>
@@ -61,6 +64,7 @@ const listData = ref([])
 let addNameVal = ref("")
 let addPriceVal = ref("")
 let addBasePriceVal = ref("")
+let addBaseTimeVal = ref("")
 
 // 添加
 function addItem(){
@@ -70,8 +74,11 @@ function addItem(){
   }else if(!addPriceVal.value){
     ElMessage.error("请先填入价格")
     return
-  }else if(!addBasePriceVal){
+  }else if(!addBasePriceVal.value){
     ElMessage.error("请先填入套餐价")
+    return
+  }else if(!addBaseTimeVal.value){
+    ElMessage.error("请先填入套餐时长")
     return
   }
   const obj = {
@@ -79,11 +86,13 @@ function addItem(){
     name: addNameVal.value,
     price: addPriceVal.value,
     base_price: addBasePriceVal.value,
+    base_hours: addBaseTimeVal.value,
   }
   listData.value.push(obj)
   addNameVal.value = ""
   addPriceVal.value = ""
   addBasePriceVal.value = ""
+  addBaseTimeVal.value = ""
 }
 // 删除
 function delItem(row) {
@@ -97,23 +106,29 @@ function show(){
     visible.value = true
     listData.value = []
     props.data.forEach((item) => {
+      console.log(item)
         listData.value.push({
             id: item.id,
             name: item.name,
             price: item.price,
-            base_price: item.base_price
+            base_price: item.base_cost,
+            base_hours: item.base_hours
         })
     })
 }
 function close(){
     visible.value = false
+    addNameVal.value = ""
+    addPriceVal.value = ""
+    addBasePriceVal.value = ""
+    addBaseTimeVal.value = ""
 }
 
 const emits = defineEmits([
   "reloadList"
 ])
 async function submit() {
-    if(addNameVal.value && addPriceVal && addBasePriceVal){
+    if(addNameVal.value && addPriceVal.value && addBasePriceVal.value && addBaseTimeVal.value){
         addItem()
     }
     const res = await setRoomInfoApi(listData.value)

@@ -20,3 +20,5 @@ export const setOrderInfoApi = ((params) => http.post('/set_order_info', params)
 
 export const pauseOrderApi = ((params) => http.post("/pause_order" , params))
 export const openEndOrderApi = ((params) => http.post("/open_end_order" , params))
+
+export const changeRoomOrderApi = ((params) => http.post("/change_room_order" , params))
